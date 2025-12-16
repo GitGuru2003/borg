@@ -1092,7 +1092,7 @@ def test_exclude_nodump_dir_with_file(archivers, request):
   
 # These are the tests I added
 
-
+# Check FIFO content gets archived when read-special streams it
 @pytest.mark.skipif(not are_fifos_supported(), reason="FIFOs not supported")
 def test_create_read_special_fifo_direct(archivers, request):
     """Test --read-special with a FIFO """
@@ -1133,6 +1133,7 @@ def test_create_read_special_fifo_direct(archivers, request):
 
 @pytest.mark.skipif(not are_symlinks_supported(), reason="symlinks not supported")
 @pytest.mark.skipif(not are_fifos_supported(), reason="FIFOs not supported")
+# Make sure symlink to FIFO still reads the FIFO data with --read-special
 def test_create_read_special_symlink_to_fifo_content(archivers, request):
     """Test --read-special with symlink pointing to FIFO reads the content (lines 305-316)."""
     from threading import Thread
@@ -1175,6 +1176,7 @@ def test_create_read_special_symlink_to_fifo_content(archivers, request):
 
 
 @pytest.mark.skipif(not is_root(), reason="need (fake)root to create device files")
+# Make sure char devices get treated as files when using --read-special
 def test_create_read_special_char_device(archivers, request):
     """Test --read-special with character device (lines 337-352)."""
     archiver = request.getfixturevalue(archivers)

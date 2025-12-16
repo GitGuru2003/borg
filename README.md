@@ -27,7 +27,7 @@ These additions improve confidence in command correctness and help prevent regre
 
 ## Files Modified
 
-This contribution **only adds tests** and does **not modify any production backup code**.
+This contribution **only adds tests** and does **not modify any production backup code**. Also, I have added a comment saying that these are the tests I have added. Tests below that comment are my additions.
 
 ---
 
@@ -53,6 +53,7 @@ This contribution **only adds tests** and does **not modify any production backu
 
 **Tests Added:**
 
+* `test_check_repair_user_cancellation()` – Ensures `check --repair` aborts unless the user explicitly confirms with `YES` 
 * `test_check_repository_only_conflicts()` – Ensures `--repository-only` conflicts with archive-related options
 * `test_check_repository_only_find_lost_archives_conflict()` – Ensures `--repository-only` conflicts with `--find-lost-archives`
 * `test_check_repair_max_duration_conflict()` – Ensures `--repair` cannot be combined with `--max-duration`

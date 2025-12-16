@@ -7,12 +7,8 @@ def test_benchmark_crud(archiver, monkeypatch):
     monkeypatch.setenv("_BORG_BENCHMARK_CRUD_TEST", "YES")
     cmd(archiver, "benchmark", "crud", archiver.input_path)
 
-
-
-
-
 # These are the tests I added
-    
+# Make sure CRUD benchmark works with all the flags at once
 def test_benchmark_crud_info_progress_logjson_lockwait(archiver, monkeypatch):
     cmd(archiver, "repo-create", RK_ENCRYPTION)
     monkeypatch.setenv("_BORG_BENCHMARK_CRUD_TEST", "YES")
@@ -32,6 +28,7 @@ def test_benchmark_crud_info_progress_logjson_lockwait(archiver, monkeypatch):
 def test_benchmark_cpu(archiver):
     cmd(archiver, "benchmark", "cpu")
 
+# Make sure full benchmark runs when test mode is off
 def test_benchmark_crud_full_tests(archiver, monkeypatch):
     """Test that the full benchmark test suite is defined when not in test mode."""
 

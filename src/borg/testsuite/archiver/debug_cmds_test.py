@@ -168,6 +168,8 @@ def test_debug_info(archivers, request):
 
 # These are the tests I added
 
+
+# Try search-repo-objs with string and hex patterns
 def test_debug_search_repo_objs(archivers, request):
     """Test the debug search-repo-objs command with hex and string patterns."""
     archiver = request.getfixturevalue(archivers)
@@ -200,7 +202,7 @@ def test_debug_search_repo_objs_invalid_pattern(archivers, request):
     cmd(archiver, "repo-create", RK_ENCRYPTION)
     cmd(archiver, "create", "test", "input")
     
-    # Try to search with invalid pattern (no hex: or str: prefix)
+    # Try to search with invalid pattern 
     with pytest.raises(CommandError) as exc_info:
         cmd(archiver, "debug", "search-repo-objs", "invalid_pattern")
     
@@ -215,7 +217,7 @@ def test_debug_get_obj_invalid_id(archivers, request):
     archiver = request.getfixturevalue(archivers)
     cmd(archiver, "repo-create", RK_ENCRYPTION)
     
-    # Try to get object with invalid hex ID (not proper hex format)
+    # Try to get object with invalid hex ID 
     with pytest.raises(CommandError) as exc_info:
         cmd(archiver, "debug", "get-obj", "not_a_valid_hex_id", "output/file")
     

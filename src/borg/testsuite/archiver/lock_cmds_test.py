@@ -58,6 +58,7 @@ def test_with_lock_non_existent_command(archivers, request):
 
 
 # These are the tests I added
+# command runs and lock refresh thread stays good
 def test_with_lock_successful_command(archivers, request):
     """Test that with-lock successfully executes a command and properly manages the lock refreshing thread."""
     archiver = request.getfixturevalue(archivers)
@@ -76,8 +77,7 @@ def test_with_lock_subprocess_failure_inproc(archivers, request, monkeypatch):
     monkeypatch.setattr(lock_cmds.subprocess, "call", fake_call)
 
     expected_ec = CommandError().exit_code
-    # Now run with fork=False so the exception path is covered by coverage
-    # When fork=False, the exception propagates up, so we must catch it
+    # Now this will run with fork=False so the exception path is covered by coverage
     with pytest.raises(CommandError) as exc_info:
         cmd(archiver, "with-lock", "dummy-cmd", fork=False)
     

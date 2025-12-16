@@ -451,8 +451,7 @@ def test_empty_repository(archivers, request):
 
 
 # These are the tests I added 
-
-
+# Make sure repair bails unless the user really confirms
 def test_check_repair_user_cancellation(archivers, request, monkeypatch):
     """Test that check --repair is cancelled if user doesn't confirm with YES."""
     from ...helpers import CancelledByUser
