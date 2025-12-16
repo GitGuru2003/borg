@@ -2,116 +2,118 @@
 
 ## Repository Information
 
-**GitHub Repository:** https://github.com/GitGuru2003/borg/tree/main
-
-**Original Project:** https://github.com/borgbackup/borg
+**GitHub Repository:** [https://github.com/GitGuru2003/borg/tree/main](https://github.com/GitGuru2003/borg/tree/main)
+**Original Project:** [https://github.com/borgbackup/borg](https://github.com/borgbackup/borg)
 
 ---
 
 ## Overview
 
-I added a bunch of new tests to BorgBackup to check if five important archiver commands work correctly. The main goal was to test parts of the code that weren't covered before, especially when things go wrong or weird things happen.
+This repository contains my testing contribution to the BorgBackup project.
+I added new tests to the BorgBackup test suite to validate the behavior of five important archiver commands. The primary goal was to exercise previously untested code paths, with a particular focus on **error handling**, **safety checks**, and **edge-case behavior**.
 
-### How Much Coverage I Improved
+These additions improve confidence in command correctness and help prevent regressions in a safety-critical backup system.
 
-- `benchmark_cmd.py`: 57% → 100% (added 43%)
-- `lock_cmds.py`: 74% → 100% (added 26%)
-- `check_cmd.py`: 85% → 100% (added 15%)
-- `debug_cmd.py`: 78% → 96% (added 18%)
-- `create_cmd.py`: 82% → 83% (added 1%)
+### Coverage Improvements
+
+* `benchmark_cmd.py`: 57% → 100% (+43%)
+* `lock_cmds.py`: 74% → 100% (+26%)
+* `check_cmd.py`: 85% → 100% (+15%)
+* `debug_cmd.py`: 78% → 96% (+18%)
+* `create_cmd.py`: 82% → 83% (+1%)
 
 ---
 
 ## Files Modified
 
-I only added tests - didn't change any of the actual backup code.
+This contribution **only adds tests** and does **not modify any production backup code**.
+
+---
 
 ### 1. `src/borg/testsuite/archiver/benchmark_cmd_test.py`
 
-**Tests I Added:**
+**Tests Added:**
 
-- `test_benchmark_crud_info_progress_logjson_lockwait()` - Tests if you can use multiple options together like --info, --progress, --log-json, and --lock-wait
-- `test_benchmark_crud_remote_options()` - Tests if the backup works when you use --rsh and --remote-path for remote backups
-- `test_benchmark_crud_full_tests()` - Tests if the full benchmark works when it's not in test mode
-- `test_benchmark_cpu()` - Tests the CPU benchmark feature
+* `test_benchmark_crud_info_progress_logjson_lockwait()` – Verifies that multiple global options (`--info`, `--progress`, `--log-json`, `--lock-wait`) can be used together
+* `test_benchmark_crud_remote_options()` – Verifies remote execution using `--rsh` and `--remote-path`
+* `test_benchmark_crud_full_tests()` – Verifies full benchmark execution when not in test mode
+* `test_benchmark_cpu()` – Verifies the CPU benchmark command
 
-**What Gets Tested:**
+**Behavior Validated:**
 
-- Can it backup to a remote server using SSH?
-- Do all the options work together?
-- Does CPU benchmarking work?
-- Does the full benchmark run correctly?
+* Remote execution via SSH
+* Compatibility of multiple global options
+* Correct execution of CPU benchmarks
+* Successful execution of full benchmark workflows
 
 ---
 
 ### 2. `src/borg/testsuite/archiver/check_cmd_test.py`
 
-**Tests I Added:**
+**Tests Added:**
 
-- `test_check_repository_only_conflicts()` - Makes sure you can't use --repository-only with archive options at the same time
-- `test_check_repository_only_find_lost_archives_conflict()` - Checks that --repository-only and --find-lost-archives can't be used together
-- `test_check_repair_max_duration_conflict()` - Makes sure you can't use --repair and --max-duration at the same time
-- `test_check_max_duration_requires_repository_only()` - Checks that --max-duration only works if you also use --repository-only
+* `test_check_repository_only_conflicts()` – Ensures `--repository-only` conflicts with archive-related options
+* `test_check_repository_only_find_lost_archives_conflict()` – Ensures `--repository-only` conflicts with `--find-lost-archives`
+* `test_check_repair_max_duration_conflict()` – Ensures `--repair` cannot be combined with `--max-duration`
+* `test_check_max_duration_requires_repository_only()` – Ensures `--max-duration` requires `--repository-only`
 
-**What Gets Tested:**
+**Behavior Validated:**
 
-- Does it stop you from using dangerous options together?
-- Does it catch when you accidentally use conflicting options?
-- Is the user protected from messing things up?
+* Rejection of unsafe or contradictory option combinations
+* Clear error reporting for invalid command usage
+* Protection against dangerous repository maintenance operations
 
 ---
 
 ### 3. `src/borg/testsuite/archiver/create_cmd_test.py`
 
-**Tests I Added:**
+**Tests Added:**
 
-- `test_create_read_special_fifo_direct()` - Tests if it can backup special pipe files with --read-special
-- `test_create_read_special_symlink_to_fifo_content()` - Tests if it handles links that point to pipes
-- `test_create_read_special_char_device()` - Tests if it can backup character devices
+* `test_create_read_special_fifo_direct()` – Verifies correct archiving of FIFO contents using `--read-special`
+* `test_create_read_special_symlink_to_fifo_content()` – Verifies handling of symlinks pointing to FIFOs
+* `test_create_read_special_char_device()` – Verifies behavior when archiving character devices
 
-**What Gets Tested:**
+**Behavior Validated:**
 
-- Can it handle weird special files on Linux/macOS?
-- Does it correctly copy data from pipes?
-- Does it work on different operating systems?
-- Does the backup preserve the data correctly?
+* Correct handling of platform-specific special files
+* Accurate preservation of streamed file contents
+* Correct behavior across supported operating systems
 
-**Note:** These tests skip if they're running on incompatible systems
+**Note:** These tests are conditionally skipped on unsupported platforms.
 
 ---
 
 ### 4. `src/borg/testsuite/archiver/debug_cmds_test.py`
 
-**Tests I Added:**
+**Tests Added:**
 
-- `test_debug_search_repo_objs()` - Tests if you can search for files using hex codes or text
-- `test_debug_search_repo_objs_invalid_pattern()` - Tests if it rejects bad search patterns
-- `test_debug_get_obj_invalid_id()` - Tests if it gives an error when you ask for a file with a bad ID
-- `test_debug_parse_obj_invalid_id()` - Tests if parse-obj doesn't break with a bad ID
-- `test_debug_put_obj_invalid_id()` - Tests if put-obj doesn't break with a bad ID
-- `test_debug_get_obj_not_found()` - Tests if it handles missing files properly
+* `test_debug_search_repo_objs()` – Verifies searching repository objects using `str:` and `hex:` patterns
+* `test_debug_search_repo_objs_invalid_pattern()` – Verifies rejection of invalid search patterns
+* `test_debug_get_obj_invalid_id()` – Verifies error handling for invalid object IDs
+* `test_debug_parse_obj_invalid_id()` – Verifies safe failure for invalid parse-obj input
+* `test_debug_put_obj_invalid_id()` – Verifies safe failure for invalid put-obj input
+* `test_debug_get_obj_not_found()` – Verifies handling of missing repository objects
 
-**What Gets Tested:**
+**Behavior Validated:**
 
-- Does it check if the search pattern is valid before searching?
-- Does it give helpful errors when things go wrong?
-- Does it prevent you from using bad file IDs?
-- Does it handle things gracefully when a file doesn't exist?
+* Input validation for debug commands
+* Clear and safe failure modes
+* Prevention of misuse with malformed object identifiers
 
 ---
 
 ### 5. `src/borg/testsuite/archiver/lock_cmds_test.py`
 
-**Tests I Added:**
+**Tests Added:**
 
-- `test_with_lock_successful_command()` - Tests if a command works when it locks the repository
-- `test_with_lock_subprocess_failure_inproc()` - Tests what happens when a command fails while holding the lock
+* `test_with_lock_successful_command()` – Verifies successful command execution under a repository lock
+* `test_with_lock_subprocess_failure_inproc()` – Verifies safe handling of subprocess failures while holding a lock
 
-**What Gets Tested:**
+**Behavior Validated:**
 
-- Does it properly lock and unlock the repository?
-- What happens if a backup fails, does it clean up properly?
-- Does the error message get passed back to the user?
+* Correct acquisition and release of repository locks
+* Proper cleanup after failures
+* Propagation of meaningful error messages
 
 ---
 
@@ -119,74 +121,74 @@ I only added tests - didn't change any of the actual backup code.
 
 ### Prerequisites
 
-First, clone the repository and set it up:
+Clone the repository and enter the project directory:
 
 ```bash
 git clone https://github.com/GitGuru2003/borg.git
 cd borg
 ```
 
-Create a virtual environment:
+Create and activate a virtual environment:
 
 ```bash
 python3 -m venv borg-env
-source borg-env/bin/activate  # On Windows: borg-env\Scripts\activate
+source borg-env/bin/activate  # Windows: borg-env\Scripts\activate
 ```
 
-Install what you need to run the tests:
+Install development dependencies:
 
 ```bash
 pip install -r requirements.d/development.txt
 pip install -e .
 ```
 
-You'll also need fakeroot to run the tests properly:
+Install `fakeroot` (required for some tests):
 
-**macOS:**
+**macOS**
+
 ```bash
 brew install fakeroot
 ```
 
-**Linux:**
+**Linux**
+
 ```bash
 sudo apt-get install fakeroot
 ```
 
-### Running All the Tests
+---
 
-Run everything at once:
+### Running All Archiver Tests
 
 ```bash
 fakeroot -u pytest src/borg/testsuite/archiver -v
 ```
 
-Or run tests for specific commands:
+### Running Tests by Command
 
 ```bash
 fakeroot -u pytest src/borg/testsuite/archiver/benchmark_cmd_test.py -v
 fakeroot -u pytest src/borg/testsuite/archiver/check_cmd_test.py -v
 fakeroot -u pytest src/borg/testsuite/archiver/create_cmd_test.py -v
-fakeroot -u pytest src/borg/testsuite/archiver/debug_cmd_test.py -v
+fakeroot -u pytest src/borg/testsuite/archiver/debug_cmds_test.py -v
 fakeroot -u pytest src/borg/testsuite/archiver/lock_cmds_test.py -v
 ```
 
-### Running Just One Test
-
-If you want to test just one thing:
+### Running a Single Test
 
 ```bash
 fakeroot -u pytest src/borg/testsuite/archiver/check_cmd_test.py::test_check_repository_only_conflicts -v
 ```
 
-Or with even more details:
+Verbose mode example:
 
 ```bash
 fakeroot -u pytest src/borg/testsuite/archiver/create_cmd_test.py::test_create_read_special_fifo_direct -vv
 ```
 
-### Checking Code Coverage
+---
 
-To see how much code gets tested:
+## Checking Code Coverage
 
 ```bash
 fakeroot -u pytest src/borg/testsuite/archiver \
@@ -195,14 +197,16 @@ fakeroot -u pytest src/borg/testsuite/archiver \
     --cov-report=term
 ```
 
-Then open the report:
+Open the HTML report:
 
-**macOS:**
+**macOS**
+
 ```bash
 open coverage_html/index.html
 ```
 
-**Linux:**
+**Linux**
+
 ```bash
 xdg-open coverage_html/index.html
 ```
@@ -211,4 +215,5 @@ xdg-open coverage_html/index.html
 
 ## License
 
-See LICENSE file for details.
+See the `LICENSE` file for details.
+
