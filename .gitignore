@@ -28,3 +28,5 @@ borg.exe
 .coverage
 .coverage.*
 .vagrant
+borg-env/
+cmd_coverage_html/

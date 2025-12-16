@@ -164,6 +164,10 @@ def test_debug_info(archivers, request):
     assert "Python" in output
 
 
+
+
+# These are the tests I added
+
 def test_debug_search_repo_objs(archivers, request):
     """Test the debug search-repo-objs command with hex and string patterns."""
     archiver = request.getfixturevalue(archivers)
@@ -179,20 +183,18 @@ def test_debug_search_repo_objs(archivers, request):
     
     # Search for the string pattern
     output = cmd(archiver, "debug", "search-repo-objs", f"str:{test_string}")
-    # The search should find the string in repository objects
-    # We just verify the command completes and produces output
     assert "Done." in output
     
-    # Search for a hex pattern (using a simple hex sequence)
-    hex_pattern = "hex:313233"  # hex for "123"
+    # Search for a hex pattern
+    hex_pattern = "hex:313233"  
     output = cmd(archiver, "debug", "search-repo-objs", hex_pattern)
     assert "Done." in output
 
+    import pytest
+    from ...helpers import CommandError
 
 def test_debug_search_repo_objs_invalid_pattern(archivers, request):
     """Test search-repo-objs with an invalid search pattern."""
-    import pytest
-    from ...helpers import CommandError
     
     archiver = request.getfixturevalue(archivers)
     cmd(archiver, "repo-create", RK_ENCRYPTION)

@@ -54,12 +54,14 @@ def test_with_lock_non_existent_command(archivers, request):
     cmd(archiver, "with-lock", *command, fork=True, exit_code=expected_ec)
 
 
+
+
+
+# These are the tests I added
 def test_with_lock_successful_command(archivers, request):
     """Test that with-lock successfully executes a command and properly manages the lock refreshing thread."""
     archiver = request.getfixturevalue(archivers)
     cmd(archiver, "repo-create", RK_ENCRYPTION)
-    # Run with fork=False so coverage tracking works properly
-    # This covers lines 20-26 and 30 (thread start, subprocess call, thread terminate)
     cmd(archiver, "with-lock", "echo", "test", fork=False, exit_code=0)
 
 def test_with_lock_subprocess_failure_inproc(archivers, request, monkeypatch):

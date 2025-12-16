@@ -1090,14 +1090,12 @@ def test_exclude_nodump_dir_with_file(archivers, request):
 
 
   
-# def test_invalid_option_errors(archiver):
-#     out = cmd(archiver, "create", "--definitely-not-a-flag", exit_code=2)
-#     assert "unrecognized" in out.lower() or "error" in out.lower()
+# These are the tests I added
 
 
 @pytest.mark.skipif(not are_fifos_supported(), reason="FIFOs not supported")
 def test_create_read_special_fifo_direct(archivers, request):
-    """Test --read-special with a FIFO (not via symlink) to cover lines 327-336."""
+    """Test --read-special with a FIFO """
     from threading import Thread
     
     def fifo_feeder(fn, data):

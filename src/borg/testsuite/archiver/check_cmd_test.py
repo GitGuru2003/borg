@@ -448,6 +448,11 @@ def test_empty_repository(archivers, request):
     cmd(archiver, "check", exit_code=1)
 
 
+
+
+# These are the tests I added 
+
+
 def test_check_repair_user_cancellation(archivers, request, monkeypatch):
     """Test that check --repair is cancelled if user doesn't confirm with YES."""
     from ...helpers import CancelledByUser
@@ -455,7 +460,6 @@ def test_check_repair_user_cancellation(archivers, request, monkeypatch):
     archiver = request.getfixturevalue(archivers)
     check_cmd_setup(archiver)
     
-    # Simulate user entering "no" instead of "YES"
     monkeypatch.setenv("BORG_CHECK_I_KNOW_WHAT_I_AM_DOING", "no")
     
     with pytest.raises(CancelledByUser):

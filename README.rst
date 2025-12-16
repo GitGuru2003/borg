@@ -1,215 +1,211 @@
-This is borg2!
---------------
-
-Please note that this is the README for borg2 / master branch.
-
-For the stable version's docs, please see here:
-
-https://borgbackup.readthedocs.io/en/stable/
-
-Borg2 is currently in beta testing and might get major and/or
-breaking changes between beta releases (and there is no beta to
-next-beta upgrade code, so you will have to delete and re-create repos).
-
-Thus, **DO NOT USE BORG2 FOR YOUR PRODUCTION BACKUPS!** Please help with
-testing it, but set it up *additionally* to your production backups.
-
-TODO: the screencasts need a remake using borg2, see here:
-
-https://github.com/borgbackup/borg/issues/6303
+======================================
+BorgBackup Testing Contribution
 
 
-What is BorgBackup?
--------------------
+Repository Information
+======================
 
-BorgBackup (short: Borg) is a deduplicating backup program.
-Optionally, it supports compression and authenticated encryption.
+**GitHub Repository:** `https://github.com/GitGuru2003/borg/tree/main`
 
-The main goal of Borg is to provide an efficient and secure way to back up data.
-The data deduplication technique used makes Borg suitable for daily backups
-since only changes are stored.
-The authenticated encryption technique makes it suitable for backups to targets not
-fully trusted.
+**Original Project:** https://github.com/borgbackup/borg
 
-See the `installation manual`_ or, if you have already
-downloaded Borg, ``docs/installation.rst`` to get started with Borg.
-There is also an `offline documentation`_ available, in multiple formats.
 
-.. _installation manual: https://borgbackup.readthedocs.io/en/master/installation.html
-.. _offline documentation: https://readthedocs.org/projects/borgbackup/downloads
 
-Main features
+Overview
+========
+
+I added a bunch of new tests to BorgBackup to check if five important archiver commands work correctly. The main goal was to test parts of the code that weren't covered before, especially when things go wrong or weird things happen.
+
+**How Much Coverage I Improved:**
+
+- ``benchmark_cmd.py``: 57% → 100% (added 43%)
+- ``lock_cmds.py``: 74% → 100% (added 26%)
+- ``check_cmd.py``: 85% → 100% (added 15%)
+- ``debug_cmd.py``: 78% → 96% (added 18%)
+- ``create_cmd.py``: 82% → 83% (added 1%)
+
+--------
+
+Files Modified
+==============
+
+I only added tests - didn't change any of the actual backup code.
+
+1. ``src/borg/testsuite/archiver/benchmark_cmd_test.py``
+-------------------------------------------------------------
+
+**Tests I Added:**
+
+- ``test_benchmark_crud_info_progress_logjson_lockwait()`` - Tests if you can use multiple options together like --info, --progress, --log-json, and --lock-wait
+- ``test_benchmark_crud_remote_options()`` - Tests if the backup works when you use --rsh and --remote-path for remote backups
+- ``test_benchmark_crud_full_tests()`` - Tests if the full benchmark works when it's not in test mode
+- ``test_benchmark_cpu()`` - Tests the CPU benchmark feature
+
+**What Gets Tested:**
+
+- Can it backup to a remote server using SSH?
+- Do all the options work together?
+- Does CPU benchmarking work?
+- Does the full benchmark run correctly?
+
+--------
+
+2. ``src/borg/testsuite/archiver/check_cmd_test.py``
+--------------------------------------------------------
+
+**Tests I Added:**
+
+- ``test_check_repository_only_conflicts()`` - Makes sure you can't use --repository-only with archive options at the same time
+- ``test_check_repository_only_find_lost_archives_conflict()`` - Checks that --repository-only and --find-lost-archives can't be used together
+- ``test_check_repair_max_duration_conflict()`` - Makes sure you can't use --repair and --max-duration at the same time
+- ``test_check_max_duration_requires_repository_only()`` - Checks that --max-duration only works if you also use --repository-only
+
+**What Gets Tested:**
+
+- Does it stop you from using dangerous options together?
+- Does it catch when you accidentally use conflicting options?
+- Is the user protected from messing things up?
+
+--------
+
+3. ``src/borg/testsuite/archiver/create_cmd_test.py``
+---------------------------------------------------------
+
+**Tests I Added:**
+
+- ``test_create_read_special_fifo_direct()`` - Tests if it can backup special pipe files with --read-special
+- ``test_create_read_special_symlink_to_fifo_content()`` - Tests if it handles links that point to pipes
+- ``test_create_read_special_char_device()`` - Tests if it can backup character devices
+
+**What Gets Tested:**
+
+- Can it handle weird special files on Linux/macOS?
+- Does it correctly copy data from pipes?
+- Does it work on different operating systems?
+- Does the backup preserve the data correctly?
+
+**Note:** These tests skip if they're running on incompatible systems
+
+--------
+
+4. ``src/borg/testsuite/archiver/debug_cmds_test.py``
+--------------------------------------------------------
+
+
+**Tests I Added:**
+
+- ``test_debug_search_repo_objs()`` - Tests if you can search for files using hex codes or text
+- ``test_debug_search_repo_objs_invalid_pattern()`` - Tests if it rejects bad search patterns
+- ``test_debug_get_obj_invalid_id()`` - Tests if it gives an error when you ask for a file with a bad ID
+- ``test_debug_parse_obj_invalid_id()`` - Tests if parse-obj doesn't break with a bad ID
+- ``test_debug_put_obj_invalid_id()`` - Tests if put-obj doesn't break with a bad ID
+- ``test_debug_get_obj_not_found()`` - Tests if it handles missing files properly
+
+**What Gets Tested:**
+
+- Does it check if the search pattern is valid before searching?
+- Does it give helpful errors when things go wrong?
+- Does it prevent you from using bad file IDs?
+- Does it handle things gracefully when a file doesn't exist?
+
+--------
+
+5. ``src/borg/testsuite/archiver/lock_cmds_test.py``
+--------------------------------------------------------
+
+**Tests I Added:**
+
+- ``test_with_lock_successful_command()`` - Tests if a command works when it locks the repository
+- ``test_with_lock_subprocess_failure_inproc()`` - Tests what happens when a command fails while holding the lock
+
+**What Gets Tested:**
+
+- Does it properly lock and unlock the repository?
+- What happens if a backup fails, does it clean up properly?
+- Does the error message get passed back to the user?
+
+--------
+
+How to Run the Tests
+--------------------
+
+Prerequisites
 ~~~~~~~~~~~~~
 
-**Space efficient storage**
-  Deduplication based on content-defined chunking is used to reduce the number
-  of bytes stored: each file is split into a number of variable length chunks
-  and only chunks that have never been seen before are added to the repository.
+First, clone the repository and set it up::
 
-  A chunk is considered duplicate if its id_hash value is identical.
-  A cryptographically strong hash or MAC function is used as id_hash, e.g.
-  (hmac-)sha256.
+    git clone https://github.com/GitGuru2003/borg.git
+    cd borg
 
-  To deduplicate, all the chunks in the same repository are considered, no
-  matter whether they come from different machines, from previous backups,
-  from the same backup or even from the same single file.
+Create a virtual environment::
 
-  Compared to other deduplication approaches, this method does NOT depend on:
+    python3 -m venv borg-env
+    source borg-env/bin/activate  # On Windows: borg-env\Scripts\activate
 
-  * file/directory names staying the same: So you can move your stuff around
-    without killing the deduplication, even between machines sharing a repo.
+Install what you need to run the tests::
 
-  * complete files or time stamps staying the same: If a big file changes a
-    little, only a few new chunks need to be stored - this is great for VMs or
-    raw disks.
+    pip install -r requirements.d/development.txt
+    pip install -e .
 
-  * The absolute position of a data chunk inside a file: Stuff may get shifted
-    and will still be found by the deduplication algorithm.
+You'll also need fakeroot to run the tests properly:
 
-**Speed**
-  * performance-critical code (chunking, compression, encryption) is
-    implemented in C/Cython
-  * local caching
-  * quick detection of unmodified files
+- **macOS**::
 
-**Data encryption**
-    All data can be protected client-side using 256-bit authenticated encryption
-    (AES-OCB or chacha20-poly1305), ensuring data confidentiality, integrity and
-    authenticity.
+    brew install fakeroot
 
-**Obfuscation**
-    Optionally, Borg can actively obfuscate, e.g., the size of files/chunks to
-    make fingerprinting attacks more difficult.
+- **Linux**::
 
-**Compression**
-    All data can be optionally compressed:
+    sudo apt-get install fakeroot  # This is for Linux
 
-    * lz4 (super fast, low compression)
-    * zstd (wide range from high speed and low compression to high compression
-      and lower speed)
-    * zlib (medium speed and compression)
-    * lzma (low speed, high compression)
+Running All the Tests
+~~~~~~~~~~~~~~~~~~~~~
 
-**Off-site backups**
-    Borg can store data on any remote host accessible over SSH. If Borg is
-    installed on the remote host, significant performance gains can be achieved
-    compared to using a network file system (sshfs, NFS, ...).
+Run everything at once::
 
-**Backups mountable as file systems**
-    Backup archives are mountable as user-space file systems for easy interactive
-    backup examination and restores (e.g., by using a regular file manager).
+    fakeroot -u pytest src/borg/testsuite/archiver -v
 
-**Easy installation on multiple platforms**
-    We offer single-file binaries that do not require installing anything -
-    you can just run them on these platforms:
+Or run tests for specific commands::
 
-    * Linux
-    * macOS
-    * FreeBSD
-    * OpenBSD and NetBSD (no xattrs/ACLs support or binaries yet)
-    * Cygwin (experimental, no binaries yet)
-    * Windows Subsystem for Linux (WSL) on Windows 10/11 (experimental)
+    fakeroot -u pytest src/borg/testsuite/archiver/benchmark_cmd_test.py -v
+    fakeroot -u pytest src/borg/testsuite/archiver/check_cmd_test.py -v
+    fakeroot -u pytest src/borg/testsuite/archiver/create_cmd_test.py -v
+    fakeroot -u pytest src/borg/testsuite/archiver/debug_cmd_test.py -v
+    fakeroot -u pytest src/borg/testsuite/archiver/lock_cmds_test.py -v
 
-**Free and Open Source Software**
-  * security and functionality can be audited independently
-  * licensed under the BSD (3-clause) license, see `License`_ for the
-    complete license
+Running Just One Test
+~~~~~~~~~~~~~~~~~~~~~~
 
-Easy to use
-~~~~~~~~~~~
+If you want to test just one thing::
 
-For ease of use, set the BORG_REPO environment variable::
+    fakeroot -u pytest src/borg/testsuite/archiver/check_cmd_test.py::test_check_repository_only_conflicts -v
 
-    $ export BORG_REPO=/path/to/repo
+Or with even more details::
 
-Create a new backup repository (see ``borg repo-create --help`` for encryption options)::
+    fakeroot -u pytest src/borg/testsuite/archiver/create_cmd_test.py::test_create_read_special_fifo_direct -vv
 
-    $ borg repo-create -e repokey-aes-ocb
+Checking Code Coverage
+~~~~~~~~~~~~~~~~~~~~~~
 
-Create a new backup archive::
+To see how much code gets tested::
 
-    $ borg create Monday1 ~/Documents
+    fakeroot -u pytest src/borg/testsuite/archiver \
+        --cov=borg.archiver \
+        --cov-report=html:coverage_html \
+        --cov-report=term
 
-Now do another backup, just to show off the great deduplication::
+Then open the report:
 
-    $ borg create -v --stats Monday2 ~/Documents
-    Repository: /path/to/repo
-    Archive name: Monday2
-    Archive fingerprint: 7714aef97c1a24539cc3dc73f79b060f14af04e2541da33d54c7ee8e81a00089
-    Time (start): Mon, 2022-10-03 19:57:35 +0200
-    Time (end):   Mon, 2022-10-03 19:57:35 +0200
-    Duration: 0.01 seconds
-    Number of files: 24
-    Original size: 29.73 MB
-    Deduplicated size: 520 B
+- **macOS**::
 
+    open coverage_html/index.html
 
-Helping, donations and bounties, becoming a Patron
---------------------------------------------------
+- **Linux**::
 
-Your help is always welcome!
+    xdg-open coverage_html/index.html
 
-Spread the word, give feedback, help with documentation, testing or development.
+--------
 
-You can also give monetary support to the project, see here for details:
+License
+-------
 
-https://www.borgbackup.org/support/fund.html
-
-Links
------
-
-* `Main website <https://borgbackup.readthedocs.io/>`_
-* `Releases <https://github.com/borgbackup/borg/releases>`_,
-  `PyPI packages <https://pypi.python.org/pypi/borgbackup>`_ and
-  `Changelog <https://github.com/borgbackup/borg/blob/master/docs/changes.rst>`_
-* `Offline documentation <https://readthedocs.org/projects/borgbackup/downloads>`_
-* `GitHub <https://github.com/borgbackup/borg>`_ and
-  `Issue tracker <https://github.com/borgbackup/borg/issues>`_.
-* `Web chat (IRC) <https://web.libera.chat/#borgbackup>`_ and
-  `Mailing list <https://mail.python.org/mailman/listinfo/borgbackup>`_
-* `License <https://borgbackup.readthedocs.io/en/master/authors.html#license>`_
-* `Security contact <https://borgbackup.readthedocs.io/en/master/support.html#security-contact>`_
-
-Compatibility notes
--------------------
-
-EXPECT THAT WE WILL BREAK COMPATIBILITY REPEATEDLY WHEN MAJOR RELEASE NUMBER
-CHANGES (like when going from 0.x.y to 1.0.0 or from 1.x.y to 2.0.0).
-
-NOT RELEASED DEVELOPMENT VERSIONS HAVE UNKNOWN COMPATIBILITY PROPERTIES.
-
-THIS IS SOFTWARE IN DEVELOPMENT, DECIDE FOR YOURSELF WHETHER IT FITS YOUR NEEDS.
-
-Security issues should be reported to the `Security contact`_ (or
-see ``docs/support.rst`` in the source distribution).
-
-.. start-badges
-
-|doc| |build| |coverage| |bestpractices|
-
-.. |doc| image:: https://readthedocs.org/projects/borgbackup/badge/?version=master
-        :alt: Documentation
-        :target: https://borgbackup.readthedocs.io/en/master/
-
-.. |build| image:: https://github.com/borgbackup/borg/workflows/CI/badge.svg?branch=master
-        :alt: Build Status (master)
-        :target: https://github.com/borgbackup/borg/actions
-
-.. |coverage| image:: https://codecov.io/github/borgbackup/borg/coverage.svg?branch=master
-        :alt: Test Coverage
-        :target: https://codecov.io/github/borgbackup/borg?branch=master
-
-.. |screencast_basic| image:: https://asciinema.org/a/133292.png
-        :alt: BorgBackup Basic Usage
-        :target: https://asciinema.org/a/133292?autoplay=1&speed=1
-        :width: 100%
-
-.. _installation: https://asciinema.org/a/133291?autoplay=1&speed=1
-
-.. _advanced usage: https://asciinema.org/a/133293?autoplay=1&speed=1
-
-.. |bestpractices| image:: https://bestpractices.coreinfrastructure.org/projects/271/badge
-        :alt: Best Practices Score
-        :target: https://bestpractices.coreinfrastructure.org/projects/271
-
-.. end-badges
+See LICENSE file for details.
